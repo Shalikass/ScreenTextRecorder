@@ -1,27 +1,32 @@
 using Tesseract;
 using System.ComponentModel;
+using System.Xml.Serialization;
 
 namespace ScreenTextRecorder
 {
     public partial class frmMain : Form
     {
         bool _started = false;
+        bool _processing = false;
         bool _savingToFile = false;
         string _filePath = string.Empty;
 
         System.Threading.Timer? _timer = null;
-        public BindingList<Area> areaList = new  BindingList<Area>();
+        public BindingList<Area> _areaList;
         public Area? SelectedArea { get; set; }
-        public Form? InstanceRef { get; set; }
-        public FrameControl? Selection { get; set; }
-        public frmArea? FormArea { get; set; }
+        public FrameControl Selection { get; set; }
+        public FrameControl? TestFrame { get; set; }
+        public frmArea FormArea { get; set; }
         public frmMain()
         {
             InitializeComponent();
             this.TopMost = true;
-            listBoxArea.DataSource = areaList;
+            _areaList = new BindingList<Area>(RestoreAreaListFromFile(Environment.CurrentDirectory + @"/Areas.xml"));
+            listBoxArea.DataSource = _areaList;
             EnableControls();
-
+            FormArea = new frmArea();
+            FormArea.ParentRef = this;
+            Selection = FormArea.Selection;            
         }
 
         private string ExtractTextFromImage(Image image)
@@ -37,27 +42,24 @@ namespace ScreenTextRecorder
             }
             return result;
         }
-
         private void buttonAdd_Click(object sender, EventArgs e)
         {
             if (String.IsNullOrEmpty(textBoxName.Text))
                 textBoxName.Text = "New Area";
-            Area area = new Area(textBoxName.Text,
-                                new Size(100, 50),
-                                new Point(Screen.GetBounds(this).Width / 2 - 50, Screen.GetBounds(this).Height / 2 - 25)); ;
-            areaList.Add(area);
-            listBoxArea.SelectedItem = area;
+
+            var size = new Size(100, 50);
+            var location = new Point(Screen.GetBounds(this).Width / 2 - 50, Screen.GetBounds(this).Height / 2 - 25);
+            Area area = new Area(textBoxName.Text, size, location);
             SelectedArea = area;
-            if (FormArea == null)
+            if (Selection != null && SelectedArea != null)
             {
-                FormArea = new frmArea(area);
-                FormArea.ParentRef = this;
-                Selection = FormArea.Selection;
+                Selection.Size = size;
+                Selection.Location = location;
             }
+            _areaList.Add(area);
+            listBoxArea.SelectedItem = area;
             FormArea.Show();
         }
-
-
         public void ModifyArea()
         {
             if (SelectedArea != null)
@@ -76,25 +78,23 @@ namespace ScreenTextRecorder
                     SelectedArea.Position = new Point(Int32.Parse(textBoxX.Text), Int32.Parse(textBoxY.Text));
                 }
             }
-            areaList.ResetBindings();
+            _areaList.ResetBindings();
         }
-
         private void buttonDelete_Click(object sender, EventArgs e)
         {
             int selectedIndex = listBoxArea.SelectedIndex;
             if (SelectedArea != null)
             {
-                areaList.Remove(SelectedArea);
+                _areaList.Remove(SelectedArea);
             }
-            if (areaList.Count > 0 && selectedIndex >= 0)
+            if (_areaList.Count > 0 && selectedIndex >= 0)
                 listBoxArea.SelectedIndex = selectedIndex - 1;
-            if (areaList.Count == 0 && FormArea != null)
+            if (_areaList.Count == 0 && FormArea != null)
                 FormArea.Hide();
         }
-
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            if (areaList.Count == 0) 
+            if (_areaList.Count == 0) 
                 return;
 
             int interval =  Convert.ToInt32(numericUpDownInterval.Value);
@@ -129,7 +129,7 @@ namespace ScreenTextRecorder
                 if (!string.IsNullOrEmpty(_filePath))
                 {
                     var line = "sep=\t\r\n";
-                    line += string.Join('\t', areaList.Select(area => area.Name).ToArray()) + "\r\n";
+                    line += string.Join('\t', _areaList.Select(area => area.Name).ToArray()) + "\r\n";
                     File.AppendAllText(_filePath, line);
                 }
                 else
@@ -143,7 +143,6 @@ namespace ScreenTextRecorder
 
 
         }
-
         private void buttonStop_Click(object sender, EventArgs e)
         {
             if (_timer != null)
@@ -151,39 +150,32 @@ namespace ScreenTextRecorder
             _started = false;
             EnableControls();
         }
-
         private void textBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
-
         private void listBoxArea_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxArea.SelectedItem != null)
             {
-                SelectedArea = areaList[listBoxArea.SelectedIndex];
-
-                if (FormArea == null)
-                {
-                    FormArea = new frmArea(SelectedArea);
-                    Selection = FormArea.Selection;
-                }
+                SelectedArea = _areaList[listBoxArea.SelectedIndex];
 
                 if (!_started) 
-                    FormArea.Show();
+                    FormArea?.Show();
 
                 UpdateAreaData(SelectedArea);
                 if (Selection != null)
                 {
-                    Selection.Size = SelectedArea.Size;
-                    Selection.Location = SelectedArea.Position;
+                    var size = SelectedArea.Size;
+                    var location = SelectedArea.Position;
+                    Selection.Location = location;
+                    Selection.Size = size;
                 }
             }
             else
             {
                 ClearAreaData();
-                if (FormArea != null)
-                    FormArea.Hide();
+                FormArea?.Hide();
             }
         }
         private void UpdateAreaData(Area area)
@@ -195,8 +187,8 @@ namespace ScreenTextRecorder
                 textBoxH.Text = area.Size.Height.ToString();
                 textBoxX.Text = area.Position.X.ToString();
                 textBoxY.Text = area.Position.Y.ToString();
-                pictureBox1.Image = area.Image;
-                textBox1.Text = area.LastReadData;
+                pictureBoxLastAreaImage.Image = area.Image;
+                textBoxLastReadData.Text = area.LastReadData;
             }
         }
         private void ClearAreaData()
@@ -208,7 +200,6 @@ namespace ScreenTextRecorder
             textBoxX.Text = String.Empty;
             textBoxY.Text = String.Empty;
         }
-
         private void ReadAreaData(BindingList<Area> list)
         {
             foreach (var area in list)
@@ -222,44 +213,79 @@ namespace ScreenTextRecorder
         }
         void TimerTick (object? state)
         {
-            ReadAreaData(areaList);
+            _processing = true;
+            ReadAreaData(_areaList);
             
-            Invoke((MethodInvoker)delegate {
-                if (SelectedArea != null)
-                    UpdateAreaData(SelectedArea);
-                areaList.ResetBindings();
-            });
 
             if (_savingToFile && !string.IsNullOrEmpty(_filePath))
             {
-                var line = string.Join('\t', areaList.Select(area => area.LastReadData).ToArray()) + "\r\n";
+                var line = string.Join('\t', _areaList.Select(area => area.LastReadData).ToArray()) + "\r\n";
                 File.AppendAllText(_filePath,line);
             }
-        }
+            _processing = false;
 
+            Invoke((MethodInvoker)delegate {
+                if (SelectedArea != null)
+                    UpdateAreaData(SelectedArea);
+                _areaList.ResetBindings();
+                EnableControls();
+            });
+        }
         private void listBoxArea_Enter(object sender, EventArgs e)
         {
             if (SelectedArea != null && FormArea != null && !_started)
                 FormArea.Show();
         }
-
         private void EnableControls()
         {
-            buttonStart.Enabled = !_started;
-            buttonStop.Enabled = _started;
-            buttonAdd.Enabled = !_started;
-            buttonDelete.Enabled = !_started;
-            comboBoxIntervalUnits.Enabled = !_started;
-            numericUpDownInterval.Enabled = !_started;
-            textBoxName.Enabled = !_started;
+            buttonStart.Enabled = !_started && !_processing;
+            buttonStop.Enabled = _started && !_processing;
+            buttonAdd.Enabled = !_started && !_processing;
+            buttonDelete.Enabled = !_started && !_processing;
+            comboBoxIntervalUnits.Enabled = !_started && !_processing;
+            numericUpDownInterval.Enabled = !_started && !_processing;
+            textBoxName.Enabled = !_started && !_processing;
         }
-
         private void textBoxName_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
                 ModifyArea();
             }
+        }
+        private void SaveAreaListToFile(List<Area> areas, string path)
+        {
+            Area[] arr = areas.ToArray();
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(Area[]));
+            using (TextWriter writer = new StreamWriter(path))
+            {
+                xmlSerializer.Serialize(writer, arr);
+            }
+
+        }
+        private List<Area> RestoreAreaListFromFile(string path)
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(Area[]));
+
+            Area[]? arr;
+            if (File.Exists(path))
+            {
+                using (Stream reader = new FileStream(path, FileMode.Open))
+                {
+                    arr = (Area[]?)xmlSerializer.Deserialize(reader);
+                }
+
+                if (arr != null)
+                {
+                    return arr.ToList();
+                }
+            }
+            return new List<Area>();
+        }
+
+        private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveAreaListToFile(_areaList.ToList(), Environment.CurrentDirectory + @"/Areas.xml");
         }
     }
 }

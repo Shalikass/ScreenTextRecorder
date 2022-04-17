@@ -3,25 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace ScreenTextRecorder
 {
     public class Area
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public Size Size { get; set; }
         public Point Position { get; set; }
-        public string LastReadData { get; set; }
+        [XmlIgnore]
+        public string? LastReadData { get; set; }
+        [XmlIgnore]
         public Image? Image { get; set; }
+        public Area()
+        {
+            Name = "New Area";
+            Size = new Size();
+            Position = new Point();
+        }
         public Area(string name, Size size, Point position)
         {
-            Id = Guid.NewGuid();
             Name = name;
             Size = size;
             Position = position;
-            LastReadData= String.Empty;
-            Image = null;
         }
 
         public override string ToString()

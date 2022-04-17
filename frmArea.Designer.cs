@@ -36,7 +36,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.ClientSize = new System.Drawing.Size(604, 480);
+            this.ClientSize = new System.Drawing.Size(242, 172);
             this.ControlBox = false;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -45,6 +45,8 @@
             this.Text = "Area Select";
             this.TransparencyKey = System.Drawing.Color.Red;
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmArea_FormClosing);
+            this.Load += new System.EventHandler(this.frmArea_Load);
             this.ResumeLayout(false);
 
         }

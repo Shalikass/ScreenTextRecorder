@@ -13,15 +13,13 @@ namespace ScreenTextRecorder
     public partial class frmArea : Form
     {
 
-        public Area Area { get; set; }
         public FrameControl Selection { get; set; }
         public frmMain? ParentRef { get; set; }
-        public frmArea(Area area)
+        public frmArea()
         {
             this.MaximizedBounds = Screen.GetWorkingArea(this);
             InitializeComponent();
-            Area = area;
-            Selection = new FrameControl(area.Size, area.Position);
+            Selection = new FrameControl();
             Selection.Move += Selection_Move;
             Selection.SizeChanged += Selection_SizeChanged;
             Controls.Add(Selection);
@@ -44,6 +42,17 @@ namespace ScreenTextRecorder
         private void Selection_Move(object? sender, EventArgs e)
         {
             UpdateArea();
+        }
+
+        private void frmArea_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (ParentForm != null)
+                ParentForm.Close();
+        }
+
+        private void frmArea_Load(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Maximized;
         }
     }
 }

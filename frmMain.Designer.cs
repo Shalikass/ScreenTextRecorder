@@ -47,15 +47,15 @@
             this.listBoxArea = new System.Windows.Forms.ListBox();
             this.buttonStart = new System.Windows.Forms.Button();
             this.buttonStop = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.pictureBoxLastAreaImage = new System.Windows.Forms.PictureBox();
+            this.textBoxLastReadData = new System.Windows.Forms.TextBox();
             this.checkBoxSaveToFile = new System.Windows.Forms.CheckBox();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.numericUpDownInterval = new System.Windows.Forms.NumericUpDown();
             this.labelInterval = new System.Windows.Forms.Label();
             this.comboBoxIntervalUnits = new System.Windows.Forms.ComboBox();
             this.groupBoxPosition.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLastAreaImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownInterval)).BeginInit();
             this.SuspendLayout();
             // 
@@ -227,22 +227,22 @@
             this.buttonStop.UseVisualStyleBackColor = true;
             this.buttonStop.Click += new System.EventHandler(this.buttonStop_Click);
             // 
-            // pictureBox1
+            // pictureBoxLastAreaImage
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(16, 281);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(257, 112);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 21;
-            this.pictureBox1.TabStop = false;
+            this.pictureBoxLastAreaImage.Location = new System.Drawing.Point(16, 281);
+            this.pictureBoxLastAreaImage.Name = "pictureBoxLastAreaImage";
+            this.pictureBoxLastAreaImage.Size = new System.Drawing.Size(253, 112);
+            this.pictureBoxLastAreaImage.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxLastAreaImage.TabIndex = 21;
+            this.pictureBoxLastAreaImage.TabStop = false;
             // 
-            // textBox1
+            // textBoxLastReadData
             // 
-            this.textBox1.Location = new System.Drawing.Point(16, 206);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(253, 69);
-            this.textBox1.TabIndex = 22;
+            this.textBoxLastReadData.Location = new System.Drawing.Point(16, 206);
+            this.textBoxLastReadData.Multiline = true;
+            this.textBoxLastReadData.Name = "textBoxLastReadData";
+            this.textBoxLastReadData.Size = new System.Drawing.Size(253, 69);
+            this.textBoxLastReadData.TabIndex = 22;
             // 
             // checkBoxSaveToFile
             // 
@@ -298,8 +298,8 @@
             this.Controls.Add(this.labelInterval);
             this.Controls.Add(this.numericUpDownInterval);
             this.Controls.Add(this.checkBoxSaveToFile);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.textBoxLastReadData);
+            this.Controls.Add(this.pictureBoxLastAreaImage);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.listBoxArea);
@@ -319,9 +319,10 @@
             this.Name = "frmMain";
             this.Text = "Screen Text Recorder";
             this.TransparencyKey = System.Drawing.Color.Red;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
             this.groupBoxPosition.ResumeLayout(false);
             this.groupBoxPosition.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLastAreaImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownInterval)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -347,8 +348,8 @@
         private ListBox listBoxArea;
         private Button buttonStart;
         private Button buttonStop;
-        private PictureBox pictureBox1;
-        private TextBox textBox1;
+        private PictureBox pictureBoxLastAreaImage;
+        private TextBox textBoxLastReadData;
         private CheckBox checkBoxSaveToFile;
         private SaveFileDialog saveFileDialog;
         private NumericUpDown numericUpDownInterval;

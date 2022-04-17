@@ -10,6 +10,8 @@ public class FrameControl : Control
         ResizeRedraw = true;
         //BackColor = Color.Transparent;
         BackColor = Color.Red;
+        Size = new Size(0,0);
+        Location = new Point(0,0);
     }
     public FrameControl(Size size, Point location) : this()
     {
